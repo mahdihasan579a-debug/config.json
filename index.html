@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRAVEN - App Download Center</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080b10;color:#fff;font-family:Arial,sans-serif}
+.header{text-align:center;padding:55px 20px 25px}
+.header h1{margin:0;font-size:48px;font-weight:800}
+.header p{margin:25px 0 0;color:#aeb3c0;font-size:25px}
+.container{padding:25px 30px}
+.card{background:linear-gradient(145deg,#11151c,#15111c);border:2px solid #252c36;border-radius:34px;padding:30px;margin-bottom:25px}
+.card h2{margin:0;font-size:28px}
+.card p{color:#aeb3c0;font-size:20px;margin:16px 0 25px}
+.download{display:block;width:100%;padding:23px;background:#32d17d;color:#07100b;text-align:center;text-decoration:none;border-radius:22px;font-size:26px;font-weight:bold}
+.download:active{transform:scale(.98)}
+.status{text-align:center;color:#aeb3c0;padding:30px;font-size:20px}
+.footer{text-align:center;color:#777d88;font-size:18px;margin:45px 20px 30px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>KRAVEN</h1>
+  <p>App Download Center</p>
+</div>
+
+<div class="container" id="apps">
+  <div class="status">Loading apps...</div>
+</div>
+
+<div class="footer">Links are controlled by the online config.</div>
+
+<script>
+/*
+  FIX:
+  Config.json1 is in the SAME GitHub repository as this page.
+  Using a relative URL avoids the local-file/CORS problem.
+*/
+const CONFIG_FILE = "./Config.json1";
+
+async function loadApps(){
+  const container = document.getElementById("apps");
+
+  try {
+    const response = await fetch(CONFIG_FILE + "?v=" + Date.now(), {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("Config file not found");
+    }
+
+    const data = await response.json();
+    container.innerHTML = "";
+
+    if (!Array.isArray(data.apps) || data.apps.length === 0) {
+      container.innerHTML = '<div class="status">No apps available.</div>';
+      return;
+    }
+
+    data.apps.forEach(app => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h2");
+      title.textContent = app.name || "App";
+
+      const description = document.createElement("p");
+      description.textContent = app.description || "APK • Download";
+
+      const button = document.createElement("a");
+      button.className = "download";
+      button.textContent = "⬇ DOWNLOAD";
+      button.href = app.link || "#";
+      button.target = "_blank";
+      button.rel = "noopener noreferrer";
+
+      card.appendChild(title);
+      card.appendChild(description);
+      card.appendChild(button);
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    container.innerHTML =
+      '<div class="status">Hindi ma-load ang Config.json1. Siguraduhing nasa parehong GitHub repository ang index.html at Config.json1.</div>';
+  }
+}
+
+loadApps();
+</script>
+
+</body>
+</html>
