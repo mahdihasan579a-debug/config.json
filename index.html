@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KRAVEN - App Download Center</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080b10;color:#fff;font-family:Arial,sans-serif}
+.header{text-align:center;padding:45px 18px 20px}
+.header h1{margin:0;font-size:46px}
+.header p{margin:18px 0 0;color:#aeb3c0;font-size:23px}
+.container{padding:18px 22px}
+.card{background:linear-gradient(145deg,#11151c,#15111c);border:2px solid #252c36;border-radius:24px;padding:20px;margin:0 auto 18px;max-width:590px}
+.card h2{margin:0;font-size:23px}
+.card p{color:#aeb3c0;font-size:17px;margin:10px 0 16px}
+.download{display:block;width:100%;padding:17px;background:#32d17d;color:#07100b;text-align:center;text-decoration:none;border-radius:18px;font-size:21px;font-weight:bold;border:0;cursor:pointer}
+.download:disabled{opacity:.7}
+.status{text-align:center;color:#aeb3c0;padding:25px;font-size:18px}
+.footer{text-align:center;color:#777d88;font-size:16px;margin:35px 20px 25px}
+</style>
+</head>
+<body>
+<div class="header"><h1>KRAVEN</h1><p>App Download Center</p></div>
+<div class="container" id="apps"><div class="status">Loading apps...</div></div>
+<div class="footer">Links are controlled by your online config.</div>
+<script>
+const CONFIG_URL="https://raw.githubusercontent.com/mahdihasan579a-debug/config.json/refs/heads/main/Config.json1";
+async function loadApps(){
+ const c=document.getElementById("apps");
+ try{
+  const r=await fetch(CONFIG_URL+"?v="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw 0;
+  const d=await r.json();
+  if(!Array.isArray(d.apps))throw 0;
+  c.innerHTML="";
+  d.apps.forEach(app=>{
+   const card=document.createElement("div"),h=document.createElement("h2"),p=document.createElement("p"),b=document.createElement("button");
+   card.className="card"; h.textContent=app.name||"App"; p.textContent=app.description||"APK • Download";
+   b.className="download"; b.textContent="↓ DOWNLOAD";
+   b.onclick=()=>{
+    if(!app.link)return;
+    b.disabled=true;b.textContent="Downloading...";
+    const a=document.createElement("a");a.href=app.link;a.download="";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>{b.disabled=false;b.textContent="↓ DOWNLOAD"},3000);
+   };
+   card.append(h,p,b);c.append(card);
+  });
+ }catch(e){c.innerHTML='<div class="status">Hindi ma-load ang online config.</div>';}
+}
+loadApps();
+</script>
+</body>
+</html>
