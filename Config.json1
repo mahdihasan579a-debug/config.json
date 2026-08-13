@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "NBA 2K27 TRIO COLLAB",
+      "description": "APK • MediaFire Download",
+      "link": "https://example.com/download.apk"
+    },
+    {
+      "name": "MY SECOND APP",
+      "description": "APK • Download",
+      "link": "https://example.com/second.apk"
+    }
+  ]
+}
