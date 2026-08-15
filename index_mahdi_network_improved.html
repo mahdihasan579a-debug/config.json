@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAHDI DOWLOAD - App Download Center</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080b10;color:#fff;font-family:Arial,sans-serif}
+.header{text-align:center;padding:45px 18px 20px}
+.header h1{margin:0;font-size:46px}
+.header p{margin:18px 0 0;color:#aeb3c0;font-size:23px}
+.container{padding:18px 22px}
+.card{background:linear-gradient(145deg,#11151c,#15111c);border:2px solid #252c36;border-radius:24px;padding:20px;margin:0 auto 18px;max-width:590px}
+.card h2{margin:0;font-size:23px}
+.card p{color:#aeb3c0;font-size:17px;margin:10px 0 0}
+.download{display:block;width:100%;padding:17px;background:#ff0000;color:#fff;text-align:center;text-decoration:none;border-radius:6px;font-size:21px;font-weight:bold;border:0;cursor:pointer;margin-top:15px}
+.download:disabled{opacity:.7}
+.status{text-align:center;color:#aeb3c0;padding:25px;font-size:18px}
+.offline{text-align:center;padding:45px 20px;font-size:20px;font-weight:bold;color:#ff4d4d}
+.footer{text-align:center;color:#777d88;font-size:16px;margin:35px 20px 25px}
+</style>
+</head>
+<body>
+<div class="header"><h1>MAHDI DOWLOAD</h1><p>App Download Center</p></div>
+<div class="container" id="apps"><div class="status">Loading apps...</div></div>
+<div class="footer">Links are controlled by your online config.</div>
+
+<script>
+const CONFIG_URL="https://raw.githubusercontent.com/mahdihasan579a-debug/config.json/refs/heads/main/Config.json";
+
+async function loadApps(){
+  const c=document.getElementById("apps");
+  c.innerHTML='<div class="status">Loading apps...</div>';
+
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+
+    let r;
+    try{
+      r=await fetch(CONFIG_URL+"?v="+Date.now(),{
+        cache:"no-store",
+        headers:{"Accept":"application/json"},
+        signal:controller.signal
+      });
+    }finally{
+      clearTimeout(timeout);
+    }
+
+    if(!r.ok) throw new Error("Config HTTP "+r.status);
+
+    const d=await r.json();
+
+    if(!d || !Array.isArray(d.apps)){
+      throw new Error("Invalid config format");
+    }
+
+    c.innerHTML="";
+
+    if(d.apps.length===0){
+      c.innerHTML='<div class="status">No apps available.</div>';
+      return;
+    }
+
+    d.apps.forEach(app=>{
+      const card=document.createElement("div");
+      const h=document.createElement("h2");
+      const p=document.createElement("p");
+      const b=document.createElement("button");
+
+      card.className="card";
+      h.textContent=app.name || "App";
+      p.textContent=app.description || "APK • Download";
+
+      const link=typeof app.link==="string" ? app.link.trim() : "";
+
+      b.className="download";
+
+      if(!link){
+        b.textContent="UNAVAILABLE";
+        b.disabled=true;
+        b.style.cursor="not-allowed";
+      }else{
+        b.textContent="↓ DOWNLOAD";
+
+        b.onclick=()=>{
+          if(b.disabled) return;
+
+          b.disabled=true;
+          b.textContent="Downloading...";
+
+          // Open the download URL immediately without blocking the page.
+          const opened=window.open(link,"_blank","noopener,noreferrer");
+
+          // If the browser blocks the new window, use the current page.
+          if(!opened){
+            window.location.href=link;
+          }
+
+          // Reset only if the current page is still open.
+          setTimeout(()=>{
+            if(document.visibilityState==="visible"){
+              b.disabled=false;
+              b.textContent="↓ DOWNLOAD";
+            }
+          },5000);
+        };
+      }
+
+      card.append(h,p,b);
+      c.append(card);
+    });
+
+  }catch(e){
+    console.error("Config error:",e);
+    c.innerHTML='<div class="status">Hindi ma-load ang online config.<br><span style="font-size:15px;color:#777d88">Check your internet connection or Config.json.</span></div>';
+  }
+}
+
+function showOffline(){
+  const c=document.getElementById("apps");
+  c.innerHTML='<div class="offline">NO INTERNET CONNECTION<br><span style="font-size:17px;color:#aeb3c0;font-weight:normal">PLEASE OPEN WIFI OR DATA</span></div>';
+}
+
+if(!navigator.onLine){
+  showOffline();
+}else{
+  loadApps();
+}
+
+window.addEventListener("offline",showOffline);
+window.addEventListener("online",loadApps);
+</script>
+</body>
+</html>
